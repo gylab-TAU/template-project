@@ -46,11 +46,7 @@ export function createTimeline(input = {}) {
     fullscreen_mode: true,
   });
 
-  document.addEventListener("fullscreenchange", () => {
-    if (!document.fullscreenElement) {
-      jsPsych.endExperiment("You can no longer participate in this experiment");
-    }
-  })
+  document.addEventListener("fullscreenchange", fullScreenChangeHandler)
 
   timeline.push(instructions.default.getTrial());
 
@@ -60,6 +56,8 @@ export function createTimeline(input = {}) {
   let sendData = {
     type: 'call-function',
     func: () => { 
+      document.removeEventListener("fullscreenchange", fullScreenChangeHandler)
+
       let first_trial = jsPsych.data.get().values()[0];
       let participantId = first_trial["participantId"];
       console.log(participantId)
@@ -79,6 +77,12 @@ export function createTimeline(input = {}) {
   timeline.push(endMessage)
 
   return timeline;
+}
+
+function fullScreenChangeHandler() {
+  if (!document.fullscreenElement) {
+    jsPsych.endExperiment("You can no longer participate in this experiment");
+  }
 }
 
 function sendDataToNutella(experimenterName, experimentName, data, participantId) {
@@ -104,7 +108,9 @@ function sendDataToNutella(experimenterName, experimentName, data, participantId
   });
 }
 
-export function on_finish() {}
+export function on_finish() {
+  
+}
 
 // Whatever you `export` from this file will be passed to `jsPsych.init()` (except for `timeline`,
 // which is determined using `createTimeline()`)
