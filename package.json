@@ -9,6 +9,7 @@
     "jatos": "npm run jspsych -- jatos"
   },
   "dependencies": {
+    "axios": "^0.21.4",
     "fs": "*",
     "jspsych": "github:jspsych/jsPsych#v6.3.1"
   },
