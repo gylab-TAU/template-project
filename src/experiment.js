@@ -23,6 +23,7 @@ import "jspsych/jspsych";
 import * as consent from "./components/consentComponent";
 import * as id from "./components/idComponent";
 import * as instructions from "./components/instructionsComponent";
+import * as participantDetails from "./components/participantDetailsComponent";
 
 import { showStimProcedure } from "./procedures/showStimProcedure";
 
@@ -38,6 +39,7 @@ export function createTimeline(input = {}) {
   let timeline = [];
 
   timeline.push(id.default.getTrial());
+  timeline.push(participantDetails.default.getTrial());
   timeline.push(consent.default.getConsentTrial())
 
   // Switch to fullscreen
