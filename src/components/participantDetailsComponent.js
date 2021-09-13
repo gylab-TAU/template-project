@@ -1,6 +1,8 @@
 import "jspsych/jspsych";
 import "jspsych/plugins/jspsych-external-html";
 
+import "../../styles/participantDetails.scss"
+
 class participantDetailsComponent {
     static checkAndSave() {
         let age = document.getElementById("participantAge").value;
