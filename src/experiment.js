@@ -1,24 +1,17 @@
 /**
- * @title check jspsych
- * @description 
+ * @title template-project
+ * @description This is a template project for jspsych experiments
  * @version 0.1.0
  *
  * The following lines specify which media directories will be packaged and preloaded by jsPsych.
  * Modify them to arbitrary paths (or comma-separated lists of paths) within the `media` directory,
- * or delete them.
+ * or just delete them.
  * @imageDir images
  * @miscDir html
  */
 
-// You can import the custom stylesheets you use (.scss or .css).
+// You can import stylesheets (.scss or .css).
 import "../styles/main.scss";
-
-// jsPsych plugins
-import "jspsych/plugins/jspsych-html-keyboard-response";
-import "jspsych/plugins/jspsych-fullscreen";
-import "jspsych/plugins/jspsych-call-function";
-import "jspsych/jspsych";
-
 
 import * as consent from "./components/consentComponent";
 import * as id from "./components/idComponent";
@@ -28,15 +21,32 @@ import * as participantDetails from "./components/participantDetailsComponent";
 import { showStimProcedure } from "./procedures/showStimProcedure";
 
 import axios from "axios";
-/**
- * This is where you define your jsPsych timeline.
- *
- * @param input A custom object that can be specified via the JATOS web interface ("JSON study
- *              input").
- */
 
-export function createTimeline(input = {}) {
-  let timeline = [];
+import { initJsPsych } from "jspsych";
+
+import FullscreenPlugin from "@jspsych/plugin-fullscreen";
+import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
+import PreloadPlugin from "@jspsych/plugin-preload";
+import CallFunctionPlugin from "@jspsych/plugin-call-function";
+
+/**
+ * This method will be executed by jsPsych Builder and is expected to run the jsPsych experiment
+ *
+ * @param {object} options Options provided by jsPsych Builder
+ * @param {any} [options.input] A custom object that can be specified via the JATOS web interface ("JSON study input").
+ * @param {"development"|"production"|"jatos"} options.environment The context in which the experiment is run: `development` for `jspsych run`, `production` for `jspsych build`, and "jatos" if served by JATOS
+ * @param {{images: string[]; audio: string[]; video: string[];, misc: string[];}} options.assetPaths An object with lists of file paths for the respective `@...Dir` pragmas
+ */
+export async function run({ assetPaths, input = {}, environment }) {
+  global.jsPsych = initJsPsych();
+
+  const timeline = [];
+
+  // Preload assets
+  timeline.push({
+    type: PreloadPlugin,
+    images: assetPaths.images
+  });
 
   timeline.push(id.default.getTrial());
   timeline.push(participantDetails.default.getTrial());
@@ -44,7 +54,7 @@ export function createTimeline(input = {}) {
 
   // Switch to fullscreen
   timeline.push({
-    type: "fullscreen",
+    type: FullscreenPlugin,
     fullscreen_mode: true,
   });
 
@@ -56,7 +66,7 @@ export function createTimeline(input = {}) {
 
 
   let sendData = {
-    type: 'call-function',
+    type: CallFunctionPlugin,
     func: () => { 
       document.removeEventListener("fullscreenchange", fullScreenChangeHandler)
 
@@ -71,14 +81,15 @@ export function createTimeline(input = {}) {
   timeline.push(sendData);
 
   let endMessage = {
-    type: 'html-keyboard-response',
+    type: HtmlKeyboardResponsePlugin,
     stimulus: '<p style="font-size: 48px;">Thank you!</p>',
     choices: jsPsych.NO_KEYS
   };
 
   timeline.push(endMessage)
 
-  return timeline;
+
+  await jsPsych.run(timeline);
 }
 
 function fullScreenChangeHandler() {
@@ -109,13 +120,3 @@ function sendDataToNutella(experimenterName, experimentName, data, participantId
     return false;
   });
 }
-
-export function on_finish() {
-  
-}
-
-// Whatever you `export` from this file will be passed to `jsPsych.init()` (except for `timeline`,
-// which is determined using `createTimeline()`)
-
-// Note: `preload_images`, `preload_audio`, and `preload_video` will be set automatically if you
-// don't export them.

@@ -1,11 +1,11 @@
-import "jspsych/plugins/jspsych-instructions";
+import InstructionsPlugin from "@jspsych/plugin-instructions"; "@jspsych/plugin-instructions";
 
 class consentComponent {
     static getConsentTrial() {
         let pages = this.getImageTags();
 
         let trial = {
-            type: 'instructions',
+            type: InstructionsPlugin,
             pages: pages,
             show_clickable_nav: true,
             allow_backward: false,

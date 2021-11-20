@@ -1,5 +1,4 @@
 import * as stimTrial from "../components/imageKeyComponent";
-import "jspsych/jspsych";
 
 export class showStimProcedure {
     constructor(stimFolder, stimImageName, numOfStims, fileExtension) {

@@ -1,5 +1,5 @@
-import "jspsych/jspsych";
-import "jspsych/plugins/jspsych-external-html";
+import { JsPsych } from "jspsych";
+import ExternalHtmlPlugin from "@jspsych/plugin-external-html";
 
 import "../../styles/participantDetails.scss"
 
@@ -25,7 +25,7 @@ class participantDetailsComponent {
 
     static getTrial() {
         let trial = {
-            type:'external-html',
+            type: ExternalHtmlPlugin,
             url: "media/html/participantDetails.html",
             cont_btn: "submitParticipantDetails",
             check_fn: participantDetailsComponent.checkAndSave

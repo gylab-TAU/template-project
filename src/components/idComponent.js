@@ -1,5 +1,4 @@
-import "jspsych/jspsych";
-import "jspsych/plugins/jspsych-external-html";
+import ExternalHtmlPlugin from "@jspsych/plugin-external-html";
 
 class idComponent {
     static checkAndSave() {
@@ -16,7 +15,7 @@ class idComponent {
 
     static getTrial() {
         let trial = {
-            type:'external-html',
+            type:ExternalHtmlPlugin,
             url: "media/html/idComponent.html",
             cont_btn: "continue",
             check_fn: idComponent.checkAndSave
