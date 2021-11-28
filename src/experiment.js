@@ -20,7 +20,9 @@ import * as participantDetails from "./components/participantDetailsComponent";
 
 import { showStimProcedure } from "./procedures/showStimProcedure";
 
-import axios from "axios";
+import EgoziService from "./Services/EgoziService";
+import NutellaService from "./Services/NutellaService";
+import IdFromUrlService from "./Services/IdFromUrlService";
 
 import { initJsPsych } from "jspsych";
 
@@ -48,7 +50,22 @@ export async function run({ assetPaths, input = {}, environment }) {
     images: assetPaths.images
   });
 
-  timeline.push(id.default.getTrial());
+  let getParticipantIdFromUrl = {
+    type: CallFunctionPlugin,
+    func: () => { 
+        let id = IdFromUrlService.getId();
+
+        if (!id) {
+          jsPsych.endExperiment("Participant ID is missing");
+        }
+
+        let data = {participantId: id}
+        jsPsych.data.get().push(data);
+     }
+  }
+
+  timeline.push(getParticipantIdFromUrl);
+
   timeline.push(participantDetails.default.getTrial());
   timeline.push(consent.default.getConsentTrial())
 
@@ -64,21 +81,19 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   timeline.push((new showStimProcedure("stimuli", "stim", 4, "jpg")).getProcedure());
 
-
-  let sendData = {
+  let sendDataToServer = {
     type: CallFunctionPlugin,
     func: () => { 
       document.removeEventListener("fullscreenchange", fullScreenChangeHandler)
 
-      let first_trial = jsPsych.data.get().values()[0];
+      let first_trial = jsPsych.data.get().values()[1];
       let participantId = first_trial["participantId"];
-      console.log(participantId)
-      console.log(jsPsych.data.get().values())
-      sendDataToNutella("Gali", "jspsych-attempt", jsPsych.data.get().values(), participantId);
+      
+      sendData("galit", "jspsych-try", jsPsych.data.get(), participantId);
      }
   }
 
-  timeline.push(sendData);
+  timeline.push(sendDataToServer);
 
   let endMessage = {
     type: HtmlKeyboardResponsePlugin,
@@ -98,25 +113,8 @@ function fullScreenChangeHandler() {
   }
 }
 
-function sendDataToNutella(experimenterName, experimentName, data, participantId) {
-  let postObject = {
-    "data": {
-      "participant_info": {
-        "participant_id": participantId,
-      },
-      "time": Date.now(),
-      "headers": ["fake hraders"],
-      "trials": data,
-      "experiment_info": {
-        "experimenter_name": experimenterName,
-        "experiment_name": experimentName
-      },
-      "others": {}
-    }
-  }
-  axios.post("http://178.62.106.190/saveResults/", postObject).then(() => {
-    return true;
-  }).catch(() => {
-    return false;
-  });
+function sendData(experimenterName, experimentName, data, participantId) {  
+  data = data.values();
+  NutellaService.sendDataToNutella(experimentName, experimenterName, data, participantId);
+  EgoziService.sendDataToEgozi(experimentName, experimenterName, data, participantId);
 }
